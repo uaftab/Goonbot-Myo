@@ -3,20 +3,22 @@ Current Pose:unknown Previous posefist
 
 Current Pose:rest Previous poseunknown
 
+Current Pose:waveIn Previous poserest
+
+Current Pose:rest Previous posewaveIn
+
+Current Pose:doubleTap Previous poserest
+
+Current Pose:rest Previous posedoubleTap
+
 Current Pose:fist Previous poserest
 
 Current Pose:rest Previous posefist
 
-Current Pose:waveOut Previous poserest
+Current Pose:fist Previous poserest
 
-Current Pose:rest Previous posewaveOut
+Current Pose:rest Previous posefist
 
 Current Pose:fist Previous poserest
 
-Current Pose:doubleTap Previous posefist
-
-Current Pose:rest Previous posedoubleTap
-
-Current Pose:waveOut Previous poserest
-
-Current Pose:rest Previous posewaveOut
+Current Pose:rest Previous posefist

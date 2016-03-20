@@ -10,14 +10,37 @@
 // The only file that needs to be included to use the Myo C++ SDK is myo.hpp.
 #include <myo/myo.hpp>
 #include <fstream>
+#include <shlobj.h>
+#include <shlwapi.h>
+#include <objbase.h>
+#include <process.h>
+
+//#define commandlogging 1
+
+#define STOPCMD "stp000000"
+#define FWDSPD1 "fwdspd051"
+#define FWDSPD2 "fwdspd119"
+#define FWDSPD3 "fwdspd187"
+#define FWDSPD4 "fwdspd255"
+#define BWDSPD1 "bwdspd051"
+#define BWDSPD2 "bwdspd119"
+#define BWDSPD3 "bwdspd187"
+#define BWDSPD4 "bwdspd255"
+#define FWDLFT	"fwdlft000"
+#define BWDLFT	"bwdlft000"
+#define FWDRHT	"fwdrht000"
+#define BWDRHT	"bwdrht000"
+
 // Classes that inherit from myo::DeviceListener can be used to receive events from Myo devices. DeviceListener
 // provides several virtual functions for handling different kinds of events. If you do not override an event, the
 // default behavior is to do nothing.
 class DataCollector : public myo::DeviceListener {
 public:
 	std::ofstream outlog;
+	std::ofstream commandlog;
+
 	DataCollector()
-		: onArm(false), isUnlocked(false), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(false), previouspose(myo::Pose::fist), outlog("GuestureTrace.csv")
+		: onArm(false), isUnlocked(false), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(false), previouspose(myo::Pose::fist), outlog("GuestureTrace.csv"), commandlog("CommandTrace.csv")
 	{
 	}
 	// onUnpair() is called whenever the Myo is disconnected from Myo Connect by the user.
@@ -113,11 +136,11 @@ public:
 			// Pose::toString() provides the human-readable name of a pose. We can also output a Pose directly to an
 			// output stream (e.g. std::cout << currentPose;). In this case we want to get the pose name's length so
 			// that we can fill the rest of the field with spaces below, so we obtain it as a string using toString().
-		/*	std::string poseString = currentPose.toString();
+			std::string poseString = currentPose.toString();
 			std::cout << '[' << (isUnlocked ? "unlocked" : "locked  ") << ']'
 				<< '[' << (whichArm == myo::armLeft ? "L" : "R") << ']'
 				<< '[' << poseString << std::string(14 - poseString.size(), ' ') << ']';
-		*/
+		
 			//------------------------------------------------------------
 			//std::cout <<std::endl<< "Evaluating Action for Pose" << std::endl;
 			action(currentPose, direction);
@@ -133,7 +156,10 @@ public:
 
 
 	void stp() {
-		std::cout << "stp000000" << std::endl;
+#ifdef commandlogging
+		std::cout << STOPCMD << std::endl;
+#endif
+		sendCommandtoEsp(STOPCMD);
 	}
 
 	void move(bool fwdOrBwd) {
@@ -152,32 +178,58 @@ public:
 		if (fwdOrBwd) {
 
 			if (0.2 * 255 <= pwn < 0.4 * 255) {
+#ifdef commandlogging
 				std::cout << "fwdspd051" << std::endl;
+#endif
+				sendCommandtoEsp(FWDSPD1);
+
 			}
 			else if (0.4 * 255 <= pwn < 0.6 * 255) {
+#ifdef commandlogging
 				std::cout << "fwdspd119" << std::endl;
+#endif
+				sendCommandtoEsp(FWDSPD2);
 			}
 			else if (0.6 * 255 <= pwn < 0.8 * 255) {
+#ifdef commandlogging
 				std::cout << "fwdspd187" << std::endl;
+#endif
+				sendCommandtoEsp(FWDSPD3);
 			}
 			else if (0.8 * 255 <= pwn < 1 * 255) {
+#ifdef commandlogging
 				std::cout << "fwdspd255" << std::endl;
+#endif
+				sendCommandtoEsp(FWDSPD4);
 			}
 		}
 
 		else {
 
 			if (0.2 * 255 <= pwn < 0.4 * 255) {
+#ifdef commandlogging
 				std::cout << "bwdspd051" << std::endl;
+#endif
+				sendCommandtoEsp(BWDSPD1);
 			}
 			else if (0.4 * 255 <= pwn < 0.6 * 255) {
+#ifdef commandlogging
 				std::cout << "bwdspd119" << std::endl;
+#endif
+				sendCommandtoEsp(BWDSPD2);
 			}
 			else if (0.6 * 255 <= pwn < 0.8 * 255) {
+#ifdef commandlogging
 				std::cout << "bwdspd187" << std::endl;
+#endif
+				sendCommandtoEsp(BWDSPD3);
 			}
 			else if (0.8 * 255 <= pwn < 1 * 255) {
+#ifdef commandlogging
 				std::cout << "bwdspd255" << std::endl;
+#endif
+				sendCommandtoEsp(BWDSPD4);
+
 			}
 		}
 	}
@@ -185,20 +237,32 @@ public:
 	void lft(bool fwdOrBwd) {
 
 		if (fwdOrBwd) {                      //true
+#ifdef commandlogging
 			std::cout << "fwdlft000" << std::endl;
+#endif
+			sendCommandtoEsp(FWDLFT);
 		}
 		else {                    //false
+#ifdef commandlogging
 			std::cout << "bwdlft000" << std::endl;
+#endif
+			sendCommandtoEsp(BWDLFT);
 		}
 
 	}
 
 	void rht(bool fwdOrBwd) {
 		if (fwdOrBwd) {                      //true
+#ifdef commandlogging
 			std::cout << "fwdrht000" << std::endl;
+#endif
+			sendCommandtoEsp(FWDRHT);
 		}
 		else{                    //false
+#ifdef commandlogging
 			std::cout << "bwdrht000" << std::endl;
+#endif
+			sendCommandtoEsp(BWDRHT);
 		}
 	}
 
@@ -243,8 +307,12 @@ public:
 		}
 	}
 
-	void sendCommandtoEsp(std::string command) {
-
+	void sendCommandtoEsp(std::string command_input) {
+		commandlog << "Command Sent:, " << command_input << std::endl;
+		std::string arg = command_input;
+		std::string command = "python send2esp.py ";
+		std::string systemcommnad = command + arg;
+		system(systemcommnad.c_str());
 	}
 
 	/**************************************************************************************/
