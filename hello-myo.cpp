@@ -17,19 +17,19 @@
 
 //#define commandlogging 1
 
-#define STOPCMD "stp000000"
-#define FWDSPD1 "fwdspd051"
-#define FWDSPD2 "fwdspd119"
-#define FWDSPD3 "fwdspd187"
-#define FWDSPD4 "fwdspd255"
-#define BWDSPD1 "bwdspd051"
-#define BWDSPD2 "bwdspd119"
-#define BWDSPD3 "bwdspd187"
-#define BWDSPD4 "bwdspd255"
-#define FWDLFT	"fwdlft000"
-#define BWDLFT	"bwdlft000"
-#define FWDRHT	"fwdrht000"
-#define BWDRHT	"bwdrht000"
+#define STOPCMD "stp000000\n"
+#define FWDSPD1 "fwdspd119\n" //"fwdspd051\n"
+#define FWDSPD2 "fwdspd119\n"
+#define FWDSPD3 "fwdspd187\n"
+#define FWDSPD4 "fwdspd255\n"
+#define BWDSPD1 "fwdspd119\n"
+#define BWDSPD2 "fwdspd119\n"
+#define BWDSPD3 "fwdspd187\n"
+#define BWDSPD4 "fwdspd255\n"
+#define FWDLFT	"fwdlft000\n"
+#define BWDLFT	"fwdlft000\n"
+#define FWDRHT	"fwdrht000\n"
+#define BWDRHT	"fwdrht000\n"
 
 // Classes that inherit from myo::DeviceListener can be used to receive events from Myo devices. DeviceListener
 // provides several virtual functions for handling different kinds of events. If you do not override an event, the
@@ -279,7 +279,7 @@ public:
 				previouspose = currentPose_;
 
 				if (currentPose_ == myo::Pose::doubleTap) {
-					if (fwdOrBwd = true) {
+					/*if (fwdOrBwd = true) {
 						//fwdOrBwd = false;
 						//sleep_for(nanoseconds(1000000000));
 						return false;
@@ -288,7 +288,8 @@ public:
 						//fwdOrBwd = true;
 						return true;
 						//sleep_for(nanoseconds(1000000000));
-					}
+					}*/
+					return true;
 				}
 
 				if (currentPose_ == myo::Pose::fist) {
