@@ -271,39 +271,41 @@ public:
 
 		myo::Pose currentPose_ = pose;
 		std::cout << std::endl << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
-		if (currentPose_ != previouspose) {
-			
-			//file logging
-			outlog << std::endl << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
+		if (currentPose_ != myo::Pose::rest) {
+			if (currentPose_ != previouspose) {
 
-			if (currentPose_ == myo::Pose::doubleTap) {
-				if (fwdOrBwd = true) {
-					fwdOrBwd = false;
-					//sleep_for(nanoseconds(1000000000));
+				//file logging
+				outlog << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
+
+				if (currentPose_ == myo::Pose::doubleTap) {
+					if (fwdOrBwd = true) {
+						fwdOrBwd = false;
+						//sleep_for(nanoseconds(1000000000));
+					}
+					else {
+						fwdOrBwd = true;
+						//sleep_for(nanoseconds(1000000000));
+					}
+				}
+
+				if (currentPose_ == myo::Pose::fist) {
+					stp();
+				}
+				else if (currentPose_ == myo::Pose::waveOut) {
+					lft(fwdOrBwd);
+				}
+				else if (currentPose_ == myo::Pose::waveIn) {
+					rht(fwdOrBwd);
+				}
+
+				else if (currentPose_ == myo::Pose::fingersSpread) {
+					move(fwdOrBwd);
 				}
 				else {
-					fwdOrBwd = true;
-					//sleep_for(nanoseconds(1000000000));
+					stp();
 				}
+				previouspose = currentPose_;
 			}
-
-			if (currentPose_ == myo::Pose::fist) {
-				stp();
-			}
-			else if (currentPose_ == myo::Pose::waveOut) {
-				lft(fwdOrBwd);
-			}
-			else if (currentPose_ == myo::Pose::waveIn) {
-				rht(fwdOrBwd);
-			}
-
-			else if (currentPose_ == myo::Pose::fingersSpread) {
-				move(fwdOrBwd);
-			}
-			else {
-				stp();
-			}
-			previouspose = currentPose_;
 		}
 	}
 
