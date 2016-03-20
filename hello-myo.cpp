@@ -40,7 +40,7 @@ public:
 	std::ofstream commandlog;
 
 	DataCollector()
-		: onArm(false), isUnlocked(false), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(false), previouspose(myo::Pose::fist), outlog("GuestureTrace.csv"), commandlog("CommandTrace.csv")
+		: onArm(false), isUnlocked(false), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(true), previouspose(myo::Pose::unknown), outlog("GuestureTrace.csv"), commandlog("CommandTrace.csv")
 	{
 	}
 	// onUnpair() is called whenever the Myo is disconnected from Myo Connect by the user.
@@ -143,7 +143,7 @@ public:
 		
 			//------------------------------------------------------------
 			//std::cout <<std::endl<< "Evaluating Action for Pose" << std::endl;
-			action(currentPose, direction);
+			direction = action(currentPose, direction);
 		}
 		else {
 			// Print out a placeholder for the arm and pose when Myo doesn't currently know which arm it's on.
@@ -267,7 +267,7 @@ public:
 	}
 
 	//CONTROL() should not be called if the same data is received
-	void action(myo::Pose pose,bool fwdOrBwd) {
+	bool action(myo::Pose pose,bool fwdOrBwd) {
 
 		myo::Pose currentPose_ = pose;
 		std::cout << std::endl << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
@@ -276,35 +276,46 @@ public:
 
 				//file logging
 				outlog << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
+				previouspose = currentPose_;
 
 				if (currentPose_ == myo::Pose::doubleTap) {
 					if (fwdOrBwd = true) {
-						fwdOrBwd = false;
+						//fwdOrBwd = false;
 						//sleep_for(nanoseconds(1000000000));
+						return false;
 					}
 					else {
-						fwdOrBwd = true;
+						//fwdOrBwd = true;
+						return true;
 						//sleep_for(nanoseconds(1000000000));
 					}
 				}
 
 				if (currentPose_ == myo::Pose::fist) {
 					stp();
+					return fwdOrBwd;
 				}
 				else if (currentPose_ == myo::Pose::waveOut) {
 					lft(fwdOrBwd);
+					return fwdOrBwd;
+
 				}
 				else if (currentPose_ == myo::Pose::waveIn) {
 					rht(fwdOrBwd);
+					return fwdOrBwd;
+
 				}
 
 				else if (currentPose_ == myo::Pose::fingersSpread) {
 					move(fwdOrBwd);
+					return fwdOrBwd;
+
 				}
 				else {
 					stp();
+					return fwdOrBwd;
+
 				}
-				previouspose = currentPose_;
 			}
 		}
 	}
