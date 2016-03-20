@@ -9,13 +9,15 @@
 #include <algorithm>
 // The only file that needs to be included to use the Myo C++ SDK is myo.hpp.
 #include <myo/myo.hpp>
+#include <fstream>
 // Classes that inherit from myo::DeviceListener can be used to receive events from Myo devices. DeviceListener
 // provides several virtual functions for handling different kinds of events. If you do not override an event, the
 // default behavior is to do nothing.
 class DataCollector : public myo::DeviceListener {
 public:
+	std::ofstream outlog;
 	DataCollector()
-		: onArm(false), isUnlocked(true), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(false)
+		: onArm(false), isUnlocked(false), roll_w(0), pitch_w(0), yaw_w(0), currentPose(), direction(false), previouspose(myo::Pose::fist), outlog("GuestureTrace.csv")
 	{
 	}
 	// onUnpair() is called whenever the Myo is disconnected from Myo Connect by the user.
@@ -99,23 +101,25 @@ public:
 	void print()
 	{
 		// Clear the current line
+		/*
 		std::cout << '\r';
 		// Print out the orientation. Orientation data is always available, even if no arm is currently recognized.
 		std::cout << '[' << std::string(roll_w, '*') << std::string(18 - roll_w, ' ') << ']'
 			<< '[' << std::string(pitch_w, '*') << std::string(18 - pitch_w, ' ') << ']'
 			<< '[' << std::string(yaw_w, '*') << std::string(18 - yaw_w, ' ') << ']';
+		*/
 		if (onArm) {
 			// Print out the lock state, the currently recognized pose, and which arm Myo is being worn on.
 			// Pose::toString() provides the human-readable name of a pose. We can also output a Pose directly to an
 			// output stream (e.g. std::cout << currentPose;). In this case we want to get the pose name's length so
 			// that we can fill the rest of the field with spaces below, so we obtain it as a string using toString().
-			std::string poseString = currentPose.toString();
+		/*	std::string poseString = currentPose.toString();
 			std::cout << '[' << (isUnlocked ? "unlocked" : "locked  ") << ']'
 				<< '[' << (whichArm == myo::armLeft ? "L" : "R") << ']'
 				<< '[' << poseString << std::string(14 - poseString.size(), ' ') << ']';
-
+		*/
 			//------------------------------------------------------------
-			std::cout << "Evaluating Action" << std::endl;
+			//std::cout <<std::endl<< "Evaluating Action for Pose" << std::endl;
 			action(currentPose, direction);
 		}
 		else {
@@ -201,35 +205,46 @@ public:
 	//CONTROL() should not be called if the same data is received
 	void action(myo::Pose pose,bool fwdOrBwd) {
 
-		currentPose = pose;
+		myo::Pose currentPose_ = pose;
+		std::cout << std::endl << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
+		if (currentPose_ != previouspose) {
+			
+			//file logging
+			outlog << std::endl << "Current Pose:" << currentPose_.toString() << " Previous pose" << previouspose.toString() << std::endl;
 
-		if (currentPose == myo::Pose::doubleTap) {
-			if (fwdOrBwd = true) {
-				fwdOrBwd = false;
-				//sleep_for(nanoseconds(1000000000));
+			if (currentPose_ == myo::Pose::doubleTap) {
+				if (fwdOrBwd = true) {
+					fwdOrBwd = false;
+					//sleep_for(nanoseconds(1000000000));
+				}
+				else {
+					fwdOrBwd = true;
+					//sleep_for(nanoseconds(1000000000));
+				}
+			}
+
+			if (currentPose_ == myo::Pose::fist) {
+				stp();
+			}
+			else if (currentPose_ == myo::Pose::waveOut) {
+				lft(fwdOrBwd);
+			}
+			else if (currentPose_ == myo::Pose::waveIn) {
+				rht(fwdOrBwd);
+			}
+
+			else if (currentPose_ == myo::Pose::fingersSpread) {
+				move(fwdOrBwd);
 			}
 			else {
-				fwdOrBwd = true;
-				//sleep_for(nanoseconds(1000000000));
+				stp();
 			}
+			previouspose = currentPose_;
 		}
+	}
 
-		if (currentPose == myo::Pose::fist) {
-			stp();
-		}
-		else if (currentPose == myo::Pose::waveOut) {
-			lft(fwdOrBwd);
-		}
-		else if (currentPose == myo::Pose::waveIn) {
-			rht(fwdOrBwd);
-		}
+	void sendCommandtoEsp(std::string command) {
 
-		else if (currentPose == myo::Pose::fingersSpread) {
-			move(fwdOrBwd);
-		}
-		else {
-			stp();
-		}
 	}
 
 	/**************************************************************************************/
@@ -243,6 +258,7 @@ public:
 	int roll_w, pitch_w, yaw_w;
 	myo::Pose currentPose;
 	bool direction;
+	myo::Pose previouspose;
 };
 int main(int argc, char** argv)
 {
